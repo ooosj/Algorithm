@@ -8,38 +8,36 @@ import java.util.StringTokenizer;
 public class Main {
 
     static long[][] arr;
-    static PriorityQueue<int[]> pq;
+
+    static PriorityQueue<long[]> pq = new PriorityQueue<>(new Comparator<long[]>() {
+        @Override
+        public int compare(long[] o1, long[] o2) {
+            return Long.compare(o1[0], o2[0]);
+        }
+    });
     static int n;
     static double E;
-    static int cnt;
-    static int result;
+    static long totalDistSq;
     static boolean[] visited;
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         StringTokenizer st;
 
         int tc = Integer.parseInt(br.readLine());
 
-        for(int t = 0 ; t < tc ; t++){
+        for (int t = 0; t < tc; t++) {
             n = Integer.parseInt(br.readLine());
 
-            cnt = n;
             arr = new long[n][2];
             visited = new boolean[n];
-            result = 0;
+            totalDistSq = 0;
+            pq.clear();
 
-            pq = new PriorityQueue<>(new Comparator<int[]>() {
-                @Override
-                public int compare(int[] o1, int[] o2) {
-                    return o1[0] - o2[0];
-                }
-            });
-
-            for(int i = 0 ; i < 2 ; i++){
+            for (int i = 0; i < 2; i++) {
                 st = new StringTokenizer(br.readLine());
-                for(int j = 0 ; j < n ; j++){
+                for (int j = 0; j < n; j++) {
                     arr[j][i] = Long.parseLong(st.nextToken());
                 }
             }
@@ -48,39 +46,42 @@ public class Main {
 
             prim();
 
-            sb.append("#").append(t+1).append(" ").append(result).append("\n");
-
+            long result = Math.round(totalDistSq * E);
+            sb.append("#").append(t + 1).append(" ").append(result).append("\n");
         }
-
+        System.out.println(sb);
     }
 
-    static void prim(){
-        if(pq.isEmpty()){
-            visited[0] = true;
-            for(int i = 1 ; i < n ; i++){
-                int dist = (int)Math.sqrt(Math.pow(arr[i][0] - arr[0][0], 2) + Math.pow(arr[i][1] - arr[0][1], 2));
-                pq.add(new int[]{dist, i});
-            }
+    static void prim() {
+        visited[0] = true;
+        int cnt = 1;
+
+        for (int i = 1; i < n; i++) {
+            long dx = arr[i][0] - arr[0][0];
+            long dy = arr[i][1] - arr[0][1];
+            pq.add(new long[]{dx * dx + dy * dy, i});
         }
 
-        while(true){
-            int[] temp = pq.poll();
-            int e = temp[0];
-            int v = temp[1];
+        while (!pq.isEmpty()) {
+            long[] temp = pq.poll();
+            long distSq = temp[0];
+            int v = (int) temp[1];
 
-            if(!visited[v]){
+            if (!visited[v]) {
+                visited[v] = true;
+                totalDistSq += distSq;
                 cnt++;
 
-                if(cnt == n-1) return;
+                if (cnt == n) return;
 
-                result += E*e*e;
-                for(int i = 0 ; i < n ; i++){
-                    if(i == v) continue;
-                    int dist = (int)Math.sqrt(Math.pow(arr[i][0] - arr[v][0], 2) + Math.pow(arr[i][1] - arr[v][1], 2));
-                    pq.add(new int[]{dist, i});
+                for (int i = 0; i < n; i++) {
+                    if (!visited[i]) {
+                        long dx = arr[i][0] - arr[v][0];
+                        long dy = arr[i][1] - arr[v][1];
+                        pq.add(new long[]{dx * dx + dy * dy, i});
+                    }
                 }
             }
         }
     }
-
 }
